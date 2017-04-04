@@ -31,7 +31,7 @@
       // The provided key works for this sample only when run from
       // https://google-api-javascript-client.googlecode.com/hg/samples/authSample.html
       // To use in your own application, replace this API key with your own.
-      var apiKey = '';
+      var apiKey = 'AIzaSyA4_Z_vuxo6nQCZ_2K2Tz7DkG8qZLQuMGg';
 
       // Use a button to handle authentication the first time.
       function handleClientLoad() {
@@ -41,12 +41,17 @@
 
       // Load the API and make an API call.  Display the results on the screen.
       function makeApiCall() {
+
+        var user = {'userId': '103846222472267112072'};
+        var userCollection = {
+          'collection': 'public',
+          'userId': '103846222472267112072',
+          };
+
+        // Retrieve user profile and activities
         gapi.client.load('plus', 'v1', function() {
-          var request = gapi.client.plus.people.get({
-            'userId': ''
-            // For instance: 
-            // 'userId': '+GregorioRobles'
-          });
+          // User profile
+          var request = gapi.client.plus.people.get(user);
           request.execute(function(resp) {
             var heading = document.createElement('h4');
             var image = document.createElement('img');
@@ -55,6 +60,37 @@
             heading.appendChild(document.createTextNode(resp.displayName));
 
             document.getElementById('content').appendChild(heading);
+          });
+
+          // User activities
+          var activities = gapi.client.plus.activities.list(userCollection);
+          activities.execute(function(resp) {
+
+            var activitiesList = document.createElement('ul');
+            for (var i = 0; i < resp.items.length; i++) {
+              var activity = document.createElement('li');
+
+              if (resp.items[i].object.attachments != undefined){
+                if (resp.items[i].object.attachments[0].image != undefined) {
+                  var activityImage = document.createElement('img');
+                  activityImage.height = "60";
+                  activityImage.width = "80";
+                  activityImage.src = resp.items[i].object.attachments[0].image.url;
+                  activity.appendChild(activityImage);
+                }
+              }
+
+              if (resp.items[i].address != undefined && resp.items[i].placeName != undefined) {
+                var activityAddress = document.createElement("p");
+                activityAddress.appendChild(document.createTextNode(resp.items[i].placeName));
+                activityAddress.appendChild(document.createTextNode(resp.items[i].address));
+                activity.appendChild(activityAddress);
+              }
+
+              activity.appendChild(document.createTextNode(resp.items[i].title));
+              activitiesList.appendChild(activity);
+            }
+            document.getElementById('content').appendChild(activitiesList);
           });
         });
       }
